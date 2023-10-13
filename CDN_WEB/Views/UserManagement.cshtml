@@ -1,0 +1,487 @@
+﻿@{
+    Layout = null; // Remove layout for a clean interface.
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Management</title>
+</head>
+<body>
+    <h1>User Management</h1>
+
+    <!-- Display List of Users -->
+    <h2>List of Registered Users:</h2>
+    <ul id="userList"></ul>
+
+    <!-- Create User Form -->
+    <h2>Register New User:</h2>
+    <form id="createUserForm">
+        <!-- User input fields here -->
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="email" id="mail" placeholder="Email" required>
+        <input type="text" id="phoneNumber" placeholder="Phone Number">
+        <input type="text" id="skillsets" placeholder="Skillsets">
+        <input type="text" id="hobby" placeholder="Hobby">
+        <button type="submit">Register User</button>
+    </form>
+
+    <!-- Update User Form -->
+    <h2>Update User:</h2>
+    <form id="updateUserForm">
+        <input type="text" id="updateUserId" placeholder="User ID" required>
+        <!-- User input fields here -->
+        <input type="text" id="updateUsername" placeholder="Username">
+        <input type="email" id="updateMail" placeholder="Email">
+        <input type="text" id="updatePhoneNumber" placeholder="Phone Number">
+        <input type="text" id="updateSkillsets" placeholder="Skillsets">
+        <input type="text" id="updateHobby" placeholder="Hobby">
+        <button type="submit">Update User</button>
+    </form>
+
+    <!-- Delete User Form -->
+    <h2>Delete User:</h2>
+    <form id="deleteUserForm">
+        <input type="text" id="deleteUserId" placeholder="User ID" required>
+        <button type="submit">Delete User</button>
+    </form>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+   
+        <script>
+            // Function to fetch and display the list of registered users
+            function getUsers() {
+                $.get("/api/users", function (data) {
+                    var userList = $("#userList");
+                    userList.empty();
+                    data.forEach(function (user) {
+                        userList.append("<li>" + user.username + "</li>");
+                    });
+                });
+            }
+
+        // Function to register a new user
+        $("#createUserForm").submit(function (event) {
+            event.preventDefault();
+            var newUser = {
+                username: $("#username").val(),
+                mail: $("#mail").val(),
+                phoneNumber: $("#phoneNumber").val(),
+                skillsets: $("#skillsets").val(),
+                hobby: $("#hobby").val()
+            };
+
+            $.post("/api/users", newUser, function () {
+                getUsers(); // Refresh the user list after registration
+            });
+        });
+
+        // Function to update a user
+        $("#updateUserForm").submit(function (event) {
+            event.preventDefault();
+            var userId = $("#updateUserId").val();
+            var updatedUser = {
+                id: userId,
+                username: $("#updateUsername").val(),
+                mail: $("#updateMail").val(),
+                phoneNumber: $("#updatePhoneNumber").val(),
+                skillsets: $("#updateSkillsets").val(),
+                hobby: $("#updateHobby").val()
+            };
+
+            $.ajax({
+                type: "PUT",
+                url: "/api/users/" + userId,
+                data: updatedUser,
+                success: function () {
+                    getUsers(); // Refresh the user list after updating
+                }
+            });
+        });
+
+        // Function to delete a user
+        $("#deleteUserForm").submit(function (event) {
+            event.preventDefault();
+            var userId = $("#deleteUserId").val();
+
+            $.ajax({
+                type: "DELETE",
+                url: "/api/users/" + userId,
+                success: function () {
+                    getUsers(); // Refresh the user list after deletion
+                }
+            });
+        });
+
+        // Initial fetch of user list
+        getUsers();
+    </script>
+
+    
+</body>
+</html>
+<html>
+<head>
+    <title>User Management</title>
+</head>
+<body>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <div class="container">
+        <div class="container text-center">
+            <div class="row">
+                <div class="col">
+                    <h5>User Management</h5>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create User Form -->
+        <h6>Register New User:</h6>
+        <form id="createUserForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" class="form-control" id="username" placeholder="Username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="mail">Email</label>
+                        <input type="email" class="form-control" id="mail" placeholder="Email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phoneNumber">Phone Number</label>
+                        <input type="text" class="form-control" id="phoneNumber" placeholder="Phone Number">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="skillsets">Skillsets</label>
+                        <input type="text" class="form-control" id="skillsets" placeholder="Skillsets">
+                    </div>
+                    <div class="form-group">
+                        <label for="hobby">Hobby</label>
+                        <input type="text" class="form-control" id="hobby" placeholder="Hobby">
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Register User</button>
+        </form>
+
+        <br />
+        <!-- Display List of Users -->
+        <h6>List of Registered Users:</h6>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Phone Number</th>
+                    <th>Skillsets</th>
+                    <th>Hobby</th>
+                    <th>Action</th> <!-- Add a new header column for actions -->
+                </tr>
+            </thead>
+            <tbody id="userList">
+                <!-- User data will be added here dynamically using JavaScript -->
+            </tbody>
+        </table>
+
+        <br />
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Function to fetch and display the list of registered users
+        var jwtToken = "JwtBearer";
+        function getUsers() {
+            // Get the JWT token from where you store it (e.g., localStorage)
+
+
+            // Make an AJAX GET request with the JWT token in the Authorization header
+            $.ajax({
+                url: "/api/users",
+                type: "GET",
+                headers: {
+                    "Authorization": "Bearer " + jwtToken
+                },
+                success: function (data) {
+                    var userList = $("#userList");
+                    userList.empty(); // Clear any existing data
+                    if (Array.isArray(data)) {
+                        data.forEach(function (user) {
+                            if (user.hasOwnProperty('username')) { // Use 'Username' instead of 'username'
+                                var row = $("<tr>");
+                                row.append("<td>" + user.id + "</td>"); // Use 'Id' instead of 'id'
+                                row.append("<td>" + user.username + "</td>"); // Use 'Username' instead of 'username'
+                                row.append("<td>" + user.mail + "</td>"); // Use 'Mail' instead of 'mail'
+                                row.append("<td>" + user.phoneNumber + "</td>"); // Use 'PhoneNumber' instead of 'phoneNumber'
+                                row.append("<td>" + user.skillsets + "</td>"); // Use 'Skillsets' instead of 'skillsets'
+                                row.append("<td>" + user.hobby + "</td>"); // Use 'Hobby' instead of 'hobby'
+
+                                // Add an "Edit" button for each user
+                                var editButton = $("<button>")
+                                    .text("Edit")
+                                    .addClass("btn btn-primary")
+                                    .on("click", function () {
+                                        // Replace the user information with input fields for editing
+                                        replaceWithEditForm(user, row);
+                                    });
+
+
+                                // Add a "Delete" button for each user
+                                var deleteButton = $("<button>")
+                                    .text("Delete")
+                                    .addClass("btn btn-danger")
+                                    .on("click", function () {
+                                        // Handle the deletion of the user here
+                                        var userId = user.id; // Use 'Id' for the user ID
+                                        $.ajax(
+                                            {
+                                                url: "/api/users/" + userId,
+                                                type: "DELETE",
+                                                headers: {
+                                                    "Authorization": "Bearer " + jwtToken
+                                                },
+
+                                                success: function () {
+                                                    // Handle the successful user deletion (e.g., show a success message)
+                                                    alert("User deleted successfully!");
+                                                },
+                                                error: function (xhr, textStatus, errorThrown) {
+                                                    // Handle errors (e.g., show an error message)
+                                                    alert("User deletion failed: " + xhr.responseText);
+                                                }
+                                            });
+                                    });
+
+                                // Append the "Edit" and "Delete" buttons to the action column
+                                var actionCell = $("<td>").append(editButton, " ", deleteButton);
+                                row.append(actionCell);
+
+                                userList.append(row);
+                            }
+                            else {
+                                console.error("User data is missing 'Username' property:", user);
+                            }
+                        });
+                    }
+                    else {
+                        console.error("Data is not an array:", data);
+                    }
+                },
+                error: function (error) {
+                    // Handle any errors
+                    // ...
+                }
+            });
+
+
+
+
+            //$.get("/api/users", function (data) {
+            //    var userList = $("#userList");
+            //    userList.empty(); // Clear any existing data
+            //    if (Array.isArray(data))
+            //    {
+            //        data.forEach(function (user)
+            //        {
+            //            if (user.hasOwnProperty('Username'))
+            //            { // Use 'Username' instead of 'username'
+            //                var row = $("<tr>");
+            //                row.append("<td>" + user.Id + "</td>"); // Use 'Id' instead of 'id'
+            //                row.append("<td>" + user.Username + "</td>"); // Use 'Username' instead of 'username'
+            //                row.append("<td>" + user.Mail + "</td>"); // Use 'Mail' instead of 'mail'
+            //                row.append("<td>" + user.PhoneNumber + "</td>"); // Use 'PhoneNumber' instead of 'phoneNumber'
+            //                row.append("<td>" + user.Skillsets + "</td>"); // Use 'Skillsets' instead of 'skillsets'
+            //                row.append("<td>" + user.Hobby + "</td>"); // Use 'Hobby' instead of 'hobby'
+
+            //                // Add an "Edit" button for each user
+            //                var editButton = $("<button>")
+            //                    .text("Edit")
+            //                    .addClass("btn btn-primary")
+            //                    .on("click", function ()
+            //                    {
+            //                        // Replace the user information with input fields for editing
+            //                        replaceWithEditForm(user, row);
+            //                    });
+
+
+            //                // Add a "Delete" button for each user
+            //                var deleteButton = $("<button>")
+            //                    .text("Delete")
+            //                    .addClass("btn btn-danger")
+            //                    .on("click", function ()
+            //                    {
+            //                        // Handle the deletion of the user here
+            //                        var userId = user.Id; // Use 'Id' for the user ID
+            //                        $.ajax(
+            //                            {
+            //                            type: "DELETE",
+            //                            url: "/api/users/" + userId,
+            //                            success: function ()
+            //                            {
+            //                                getUsers(); // Refresh the user list after deletion
+            //                            }
+            //                        });
+            //                    });
+
+            //                // Append the "Edit" and "Delete" buttons to the action column
+            //                var actionCell = $("<td>").append(editButton, " ", deleteButton);
+            //                row.append(actionCell);
+
+            //                userList.append(row);
+            //            }
+            //            else
+            //            {
+            //                console.error("User data is missing 'Username' property:", user);
+            //            }
+            //        });
+            //    }
+            //    else
+            //    {
+            //        console.error("Data is not an array:", data);
+            //    }
+            //})
+            //    .fail(function (jqXHR, textStatus, errorThrown)
+            //    {
+            //        console.error("API request failed: " + textStatus, errorThrown);
+            //        // Handle the error, e.g., display an error message
+            //    });
+        }
+
+        function replaceWithEditForm(user, row) {
+            // Clone the original row
+            var editRow = row.clone();
+
+            // Replace the content of the "Edit" button with a "Save" button
+            var saveButton = $("<button>")
+                .text("Save")
+                .addClass("btn btn-success")
+                .attr("id", "saveButtonId")
+                .on("click", function () {
+                    // Implement the logic to save the edited user information
+
+
+                    saveEditedUser(user.id, editRow);
+                });
+
+            editRow.find("td:last").html(saveButton);
+
+            // Replace each cell with an input field for editing
+            editRow.find("td:lt(" + (editRow.find("td").length - 1) + ")").each(function (index) {
+                var currentValue = $(this).text();
+                var inputField = $("<input>")
+                    .attr("type", "text")
+                    .val(currentValue);
+                $(this).html(inputField);
+            });
+
+            // Replace the current row with the edit form
+            row.replaceWith(editRow);
+        }
+
+        function saveEditedUser(userId, editRow) {
+            // Find the user data in the edited row
+            var updatedUser = {
+                id: userId, // Keep the same user ID
+                username: editRow.find("td:eq(1) input").val(), // Get the updated username
+                mail: editRow.find("td:eq(2) input").val(), // Get the updated email
+                phoneNumber: editRow.find("td:eq(3) input").val(), // Get the updated phone number
+                skillsets: editRow.find("td:eq(4) input").val(), // Get the updated skillsets
+                hobby: editRow.find("td:eq(5) input").val() // Get the updated hobby
+            };
+
+            $.ajax({
+                url: "/api/users/" + userId,
+                type: "PUT",
+                headers: {
+                    "Authorization": "Bearer " + jwtToken
+                },
+
+                contentType: "application/json", // Set the content type to JSON
+                data: JSON.stringify(updatedUser), // Convert the object to a JSON string
+
+                success: function () {
+                    getUsers(); // Refresh the user list after updating
+                }
+            });
+            // Here, you should send the 'updatedUser' object to your server using an API or perform any other necessary actions to save the changes.
+
+            // After successfully saving the changes, update the row with the new values
+            editRow.find("td:eq(1)").text(updatedUser.Username);
+            editRow.find("td:eq(2)").text(updatedUser.Mail);
+            editRow.find("td:eq(3)").text(updatedUser.PhoneNumber);
+            editRow.find("td:eq(4)").text(updatedUser.Skillsets);
+            editRow.find("td:eq(5)").text(updatedUser.Hobby);
+
+            // Replace the "Save" button with the "Edit" button
+            var editButton = $("<button>")
+                .text("Edit")
+                .addClass("btn btn-primary")
+                .on("click", function () {
+                    replaceWithEditForm(updatedUser, editRow);
+                });
+            // Add a "Delete" button for each user
+            var deleteButton = $("<button>")
+                .text("Delete")
+                .addClass("btn btn-danger")
+                .on("click", function () {
+                    // Handle the deletion of the user here
+                    var userId = user.Id; // Use 'Id' for the user ID
+                    $.ajax({
+                        url: "/api/users/" + userId,
+                        type: "DELETE",
+                        headers: {
+                            "Authorization": "Bearer " + jwtToken
+                        },
+
+                        success: function () {
+                            getUsers(); // Refresh the user list after deletion
+                        }
+                    });
+                });
+            var buttonCell = $("<td>").append(editButton).append(deleteButton);
+            editRow.find("td:last").html(buttonCell);
+        }
+
+        // Function to register a new user
+        $("#createUserForm").submit(function (event) {
+            event.preventDefault();
+            var newUser = {
+                username: $("#username").val(),
+                mail: $("#mail").val(),
+                phoneNumber: $("#phoneNumber").val(),
+                skillsets: $("#skillsets").val(),
+                hobby: $("#hobby").val()
+            };
+
+            $.ajax({
+
+                url: "/api/users",
+                type: "POST",
+                contentType: "application/json",// Set the content type to JSON
+                data: JSON.stringify(newUser), // Convert newUser to a JSON string
+
+                headers: {
+                    "Authorization": "Bearer " + jwtToken
+                },
+                success: function (data) {
+                    // Handle the successful registration (e.g., show a success message)
+                    alert("User registered successfully!");
+                },
+                error: function (xhr, textStatus, errorThrown) {
+                    // Handle errors (e.g., show an error message)
+                    alert("User registration failed: " + xhr.responseText);
+                }
+
+            });
+
+        });
+
+        // Initial fetch of user list
+        getUsers();
+    </script>
+</body>
+</html>
